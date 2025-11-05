@@ -1,0 +1,11 @@
+{
+  "network": "somnia-testnet",
+  "timestamp": "1761878852",
+  "deployer": "0x95621720663a0DDBF121329FB0884779Ab7780B6",
+  "contracts": {
+    "AgentRegistry": "0x318FFd8Fc398a3639Faa837307Ffdd0b9E1017c9",
+    "ContractMindHubV2": "0x8244777FAe8F2f4AE50875405AFb34E10164C027",
+    "TestToken": "0x4f692992b0e5FFF6C08A71fc39603954D986F6e7",
+    "HubAwareStaking": "0x306f0f0DED2Eda539b6f768067CC36790Eb2180c"
+  }
+}

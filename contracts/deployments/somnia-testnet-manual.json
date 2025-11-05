@@ -1,0 +1,21 @@
+{
+    "network": "somnia-testnet",
+    "chainId": 50312,
+    "timestamp": "2025-10-31",
+    "deployer": "0x95621720663a0DDBF121329FB0884779Ab7780B6",
+    "note": "Manual deployment record. AgentRegistry and ContractMindHubV2 deployed successfully.",
+    "contracts": {
+        "AgentRegistry": "0x318FFd8Fc398a3639Faa837307Ffdd0b9E1017c9",
+        "ContractMindHubV2": "0x8244777FAe8F2f4AE50875405AFb34E10164C027",
+        "TestToken": "DEPLOYMENT_PENDING",
+        "HubAwareStaking": "DEPLOYMENT_PENDING"
+    },
+    "txHashes": {
+        "AgentRegistry": "0x2679beff... (see earlier note)",
+        "ContractMindHubV2": "0x9ffd918c48a170f91002abdd33d655c39109e66da3563250e5e4a3d06a74134a"
+    },
+    "nextSteps": [
+        "Deploy TestToken and HubAwareStaking when ready",
+        "Fund staking contract and update backend env accordingly"
+    ]
+}
