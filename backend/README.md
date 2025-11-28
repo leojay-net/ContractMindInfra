@@ -2,55 +2,93 @@
 
 Python-based backend for ContractMind AI-powered blockchain infrastructure.
 
-## 🎯 Technology Stack
+## Technology Stack
 
-- **FastAPI** - High-performance async web framework
-- **FastMCP** - Model Context Protocol for AI agent integration
-- **Web3.py** - Blockchain interaction with Somnia
-- **PostgreSQL** - Analytics and agent configuration storage
-- **Redis** - Session management and caching
-- **Anthropic Claude** - AI intent parsing
-- **WebSockets** - Real-time chat communication
+- FastAPI - High-performance async web framework
+- Web3.py 6.15.1 - Blockchain interaction with Somnia
+- PostgreSQL - Analytics and agent configuration storage
+- Somnia Data Streams - Real-time on-chain data publishing
+- Multi-LLM Support - Gemini, Claude, OpenAI integration
+- WebSockets - Real-time chat communication
 
-## 🏗️ Architecture
+## Architecture
 
 ```
-Frontend (React) 
-    ↓ WebSocket
-Backend (FastAPI + FastMCP)
-    ├─► AI Service (Claude) → Parse intent
-    ├─► Intent Service → Detect contract type
-    ├─► Execution Service → Prepare transaction
-    └─► Blockchain Service → Web3 interaction
-        ↓
-Somnia Blockchain
-    ├─► AgentRegistry
-    ├─► ContractMindHubV2
-    └─► Protocol Contracts
++-----------------------------------------------------------------------+
+|                           FRONTEND                                     |
++-----------------------------------------------------------------------+
+                                |
+                          HTTP / WebSocket
+                                |
++-----------------------------------------------------------------------+
+|                      BACKEND (FastAPI)                                 |
+|                                                                        |
+|  +------------------+  +------------------+  +------------------+      |
+|  |   AI Service     |  |  Chat Service    |  | Streams Service  |      |
+|  |  (Gemini/Claude) |  |  (Conversations) |  | (Data Streams)   |      |
+|  +------------------+  +------------------+  +------------------+      |
+|           |                    |                    |                  |
+|  +------------------+  +------------------+  +------------------+      |
+|  |  Intent Service  |  | Execution Svc    |  | Analytics Svc    |      |
+|  |  (Parse Intent)  |  | (Prepare TX)     |  | (Metrics)        |      |
+|  +------------------+  +------------------+  +------------------+      |
+|           |                    |                    |                  |
+|  +------------------+  +------------------+  +------------------+      |
+|  | Blockchain Svc   |  |   Database       |  |  Streams API     |      |
+|  | (Web3 + Somnia)  |  |  (PostgreSQL)    |  | (REST Endpoints) |      |
+|  +------------------+  +------------------+  +------------------+      |
++-----------------------------------------------------------------------+
+                                |
+                           Web3 RPC
+                                |
++-----------------------------------------------------------------------+
+|                      SOMNIA BLOCKCHAIN                                 |
+|  AgentRegistry | ContractMindHubV2 | Data Streams                      |
++-----------------------------------------------------------------------+
 ```
 
-## 📋 Prerequisites
+## Data Flow with Streams
 
-- Python 3.11+
+```
+User Request                Backend Processing              Data Streams
+------------                ------------------              ------------
+
+1. Chat message    ---->    2. AI processes
+                                   |
+                            3. Generate response
+                                   |
+                            4. Store in DB       ---->     5. Publish on-chain
+                                   |                           (verifiable)
+                            6. Return response
+       <-----------------------+
+                                                                |
+7. Real-time       <------------------------------------------- +
+   subscription         WebSocket notification
+```
+
+## Prerequisites
+
+- Python 3.12+
 - PostgreSQL 14+
-- Redis 7+
-- Poetry (Python package manager)
+- pip (Python package manager)
 - Access to Somnia RPC
-- Anthropic API key
+- At least one LLM API key (Gemini, Claude, or OpenAI)
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Install Poetry
+### 1. Create Virtual Environment
 
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 ### 2. Install Dependencies
 
 ```bash
-cd backend
-poetry install
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 ### 3. Setup Environment
@@ -64,146 +102,150 @@ Required environment variables:
 ```env
 # Blockchain
 SOMNIA_RPC_URL=https://dream-rpc.somnia.network
-AGENT_REGISTRY_ADDRESS=0x...  # From deployment
-CONTRACT_MIND_HUB_ADDRESS=0x...  # From deployment
+AGENT_REGISTRY_ADDRESS=0x318FFd8Fc398a3639Faa837307Ffdd0b9E1017c9
+CONTRACT_MIND_HUB_ADDRESS=0x8244777FAe8F2f4AE50875405AFb34E10164C027
 
-# AI
-ANTHROPIC_API_KEY=your-api-key-here
+# Somnia Data Streams
+SOMNIA_STREAMS_ENABLED=true
+SOMNIA_PRIVATE_KEY=your_private_key_here
+
+# AI (at least one required)
+GEMINI_API_KEY=your-gemini-api-key
+DEFAULT_LLM_PROVIDER=gemini
 
 # Database
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/contractmind
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
+user=postgres
+password=your_password
+host=localhost
+port=5432
+dbname=contractmind
 ```
 
-### 4. Setup Database
+### 4. Initialize Database
 
 ```bash
-# Start PostgreSQL and Redis (using Docker)
-docker-compose up -d postgres redis
-
-# Run migrations
-poetry run alembic upgrade head
+python -m app.db.models
 ```
 
-### 5. Sync Contract ABIs
+### 5. Run Development Server
 
 ```bash
-# Copy ABIs from contracts deployment
-poetry run python scripts/sync_contracts.py
-```
-
-### 6. Run Development Server
-
-```bash
-poetry run uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
 Server will start at: http://localhost:8000
 
 - API Docs: http://localhost:8000/docs
 - Health Check: http://localhost:8000/health
+- Streams Status: http://localhost:8000/api/v1/streams/status
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 backend/
 ├── app/
-│   ├── api/v1/          # API endpoints
-│   │   ├── agents.py    # Agent management
-│   │   ├── chat.py      # Chat (REST)
-│   │   ├── transactions.py
-│   │   ├── analytics.py
-│   │   └── websocket.py # WebSocket chat
+│   ├── api/v1/              # API endpoints
+│   │   ├── agents.py        # Agent management
+│   │   ├── chat.py          # Chat (REST)
+│   │   ├── transactions.py  # Transaction handling
+│   │   ├── analytics.py     # Analytics queries
+│   │   ├── websocket.py     # WebSocket chat
+│   │   └── streams.py       # Somnia Data Streams API
 │   │
-│   ├── services/        # Business logic
-│   │   ├── ai_service.py
+│   ├── services/            # Business logic
+│   │   ├── ai_service.py    # LLM interaction
 │   │   ├── intent_service.py
+│   │   ├── chat_service.py  # Chat processing
 │   │   ├── execution_service.py
 │   │   ├── blockchain_service.py
-│   │   └── analytics_service.py
+│   │   ├── analytics_service.py
+│   │   └── streams_service.py  # Data Streams publishing
 │   │
-│   ├── blockchain/      # Web3 layer
+│   ├── blockchain/          # Web3 layer
 │   │   ├── client.py
-│   │   ├── contracts/
 │   │   └── events.py
 │   │
-│   ├── mcp/            # FastMCP integration
-│   │   ├── server.py
-│   │   ├── tools.py
-│   │   └── prompts.py
+│   ├── llm/                 # LLM providers
+│   │   ├── base.py
+│   │   ├── factory.py
+│   │   ├── gemini.py
+│   │   ├── claude.py
+│   │   └── openai.py
 │   │
-│   ├── models/         # Data models
-│   │   ├── database.py
+│   ├── models/              # Data models
 │   │   └── schemas.py
 │   │
-│   └── db/            # Database
-│       └── session.py
+│   ├── db/                  # Database
+│   │   ├── session.py
+│   │   └── models.py
+│   │
+│   └── middleware/          # Middleware
+│       └── error_handler.py
 │
-├── tests/             # Tests
-├── scripts/           # Utility scripts
-└── contracts/         # Contract ABIs
+├── tests/                   # Tests
+├── scripts/                 # Utility scripts
+└── contracts/               # Contract ABIs
 ```
 
-## 🔄 Data Flow
+## Somnia Data Streams
 
-### Hub-Aware Contract Flow
+The backend includes full integration with Somnia Data Streams for publishing verifiable on-chain data.
 
-```
-1. User WebSocket: "Stake 1000 tokens"
-   ↓
-2. AI Service (Claude): Parse → {action: "stake", amount: 1000}
-   ↓
-3. Intent Service: 
-   - Query AgentRegistry
-   - Detect: hub-aware contract
-   - Map: stake → stake(uint256)
-   ↓
-4. Execution Service:
-   - Prepare: hub.executeOnTarget(...)
-   - Estimate gas: ~370k
-   ↓
-5. WebSocket: Send transaction to frontend
-   ↓
-6. User signs & broadcasts
-   ↓
-7. Event Listener: 
-   - Monitor transaction
-   - Parse events
-   - Store analytics
-   ↓
-8. WebSocket: Send success notification
-```
+### Streams API Endpoints
 
-### Regular Contract Flow
+| Method | Endpoint                            | Description             |
+| ------ | ----------------------------------- | ----------------------- |
+| GET    | /api/v1/streams/status              | Service status          |
+| GET    | /api/v1/streams/schemas             | Schema definitions      |
+| POST   | /api/v1/streams/publish/execution   | Publish agent execution |
+| POST   | /api/v1/streams/publish/chat        | Publish chat message    |
+| POST   | /api/v1/streams/publish/analytics   | Publish analytics       |
+| POST   | /api/v1/streams/publish/transaction | Publish transaction     |
+| POST   | /api/v1/streams/publish/activity    | Publish activity        |
+| POST   | /api/v1/streams/publish/leaderboard | Update leaderboard      |
+| POST   | /api/v1/streams/publish/batch       | Batch publish           |
 
-```
-1. User: "Swap 100 SOMI for USDC"
-   ↓
-2. AI Service: Parse → {action: "swap", ...}
-   ↓
-3. Intent Service:
-   - Detect: regular contract (Uniswap)
-   - Map: swap → swapExactTokensForTokens
-   ↓
-4. Execution Service:
-   - Prepare: DIRECT to Uniswap
-   - Estimate gas: ~150k
-   ↓
-5. WebSocket: Send direct transaction
-   ↓
-6. User signs & broadcasts (bypasses hub)
-   ↓
-7. Analytics: Track off-chain
+### Streams Service Usage
+
+```python
+from app.services.streams_service import get_streams_service
+
+streams = get_streams_service()
+
+# Check if enabled
+if streams.enabled:
+    # Publish agent execution
+    result = await streams.publish_agent_execution(
+        agent_id="agent-123",
+        executor="0x...",
+        function_selector="0x12345678",
+        success=True,
+        gas_used=50000
+    )
+    
+    if result.success:
+        print(f"Published: {result.tx_hash}")
 ```
 
-## 🧪 API Endpoints
+## API Endpoints
+
+### REST Endpoints
+
+| Method | Endpoint                     | Description        |
+| ------ | ---------------------------- | ------------------ |
+| GET    | /health                      | Health check       |
+| GET    | /api/v1/agents               | List agents        |
+| GET    | /api/v1/agents/{id}          | Get agent details  |
+| POST   | /api/v1/agents/register      | Register new agent |
+| POST   | /api/v1/chat/message         | Send chat message  |
+| GET    | /api/v1/chat/history         | Get chat history   |
+| GET    | /api/v1/analytics/global     | Global analytics   |
+| GET    | /api/v1/analytics/agent/{id} | Agent analytics    |
 
 ### WebSocket
 
 ```
-WS /api/v1/ws/chat/{user_address}
+WS /api/v1/ws/chat/{agent_id}?user_address={address}
 ```
 
 Message types:
@@ -239,7 +281,7 @@ GET  /api/v1/analytics/agent/{id}
 GET  /api/v1/analytics/global
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Key Settings
 
@@ -263,85 +305,88 @@ class Settings:
    # Redis
    REDIS_URL: str
     
+   # Somnia Data Streams
+   SOMNIA_STREAMS_ENABLED: bool = True
+   SOMNIA_PRIVATE_KEY: str
+    
    # Rate Limiting
    RATE_LIMIT_PER_MINUTE: int = 60
 ```
 
-## 🧠 AI Integration (FastMCP)
+## AI Integration
 
-FastMCP provides structured AI agent context:
-
-```python
-from fastmcp import FastMCP
-
-mcp = FastMCP("ContractMind")
-
-@mcp.tool()
-async def parse_intent(message: str) -> dict:
-    """Parse user intent using Claude"""
-    # AI parsing logic
-    pass
-
-@mcp.tool()
-async def validate_transaction(...) -> bool:
-    """Validate transaction authorization"""
-    # Blockchain validation
-    pass
-
-@mcp.resource("contract://agents")
-async def list_agents() -> str:
-    """Get available agents for AI context"""
-    pass
-```
-
-## 📊 Database Models
+Multiple LLM providers for intent parsing:
 
 ```python
-# app/models/database.py
+from app.llm.factory import get_llm_provider
 
-class Transaction(Base):
-    id = Column(Integer, primary_key=True)
-    tx_hash = Column(String, unique=True)
-    user_address = Column(String, index=True)
-    agent_id = Column(String, index=True)
-    target_contract = Column(String)
-    function_selector = Column(String)
-    success = Column(Boolean)
-    gas_used = Column(Integer)
-    created_at = Column(DateTime)
+# Get configured provider (Claude, Gemini, or OpenAI)
+llm = await get_llm_provider()
 
-class AgentAnalytics(Base):
-    id = Column(Integer, primary_key=True)
-    agent_id = Column(String, index=True)
-    total_calls = Column(Integer)
-    total_gas_used = Column(BigInteger)
-    success_rate = Column(Float)
-    updated_at = Column(DateTime)
+# Parse user intent
+result = await llm.parse_intent(
+    message="Stake 1000 tokens",
+    context=agent_context
+)
 ```
 
-## 🧪 Testing
+### Supported Providers
+
+| Provider | Model             | Description            |
+| -------- | ----------------- | ---------------------- |
+| Claude   | claude-3-5-sonnet | Primary, best accuracy |
+| Gemini   | gemini-1.5-pro    | Fallback option        |
+| OpenAI   | gpt-4-turbo       | Alternative option     |
+
+## Database Models
+
+```python
+# app/models/schemas.py
+
+class Transaction:
+    id: int
+    tx_hash: str
+    user_address: str
+    agent_id: str
+    target_contract: str
+    function_selector: str
+    success: bool
+    gas_used: int
+    created_at: datetime
+
+class AgentAnalytics:
+    id: int
+    agent_id: str
+    total_calls: int
+    total_gas_used: int
+    success_rate: float
+    updated_at: datetime
+```
+
+## Testing
 
 ```bash
 # Run all tests
-poetry run pytest
+pip install pytest pytest-asyncio pytest-cov
+pytest
 
 # Run with coverage
-poetry run pytest --cov=app tests/
+pytest --cov=app tests/
 
 # Run specific test
-poetry run pytest tests/test_services/test_intent_service.py
+pytest tests/test_services/test_intent_service.py
 ```
 
-### On-chain (Somnia) checks
+### On-chain (Somnia) Checks
 
 We keep unit tests fast and offline by default. For a quick live-network sanity check:
 
 ```bash
 # Smoke script: verifies RPC connectivity and that deployed addresses have bytecode
-poetry run python scripts/smoke_onchain.py
+python scripts/smoke_onchain.py
 
 # Optional pytest on-chain test (opt-in)
-RUN_ONCHAIN_TESTS=1 poetry run pytest -m onchain -q
+RUN_ONCHAIN_TESTS=1 pytest -m onchain -q
 ```
 
 Current Somnia Testnet deployments:
@@ -351,7 +396,7 @@ Current Somnia Testnet deployments:
 - Chain ID: `50312`
 - RPC: `https://dream-rpc.somnia.network`
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ```bash
 # Build image
@@ -391,7 +436,7 @@ services:
       - "6379:6379"
 ```
 
-## 📈 Monitoring
+## Monitoring
 
 ### Health Check
 
@@ -399,25 +444,28 @@ services:
 curl http://localhost:8000/health
 ```
 
+### Streams Status
+
+```bash
+curl http://localhost:8000/api/v1/streams/status
+```
+
 ### Metrics
 
 ```bash
-# View logs
-poetry run python -m app.utils.logger
-
 # Database connection pool stats
 curl http://localhost:8000/api/v1/analytics/global
 ```
 
-## 🔐 Security
+## Security
 
 - WebSocket connection validation
 - Rate limiting (Redis-based)
 - Transaction validation before execution
-- Signature verification (future)
-- API key authentication (future)
+- Somnia Data Streams verification
+- API key authentication (configurable)
 
-## 🚧 Development
+## Development
 
 ### Add New Endpoint
 
@@ -433,7 +481,14 @@ curl http://localhost:8000/api/v1/analytics/global
 3. Register in blockchain service
 4. Update AI prompts for intent parsing
 
-## 📝 Environment Variables
+### Add Data Stream Schema
+
+1. Define schema in `streams_service.py`
+2. Add publish method
+3. Create API endpoint in `api/v1/streams.py`
+4. Update frontend StreamsClient
+
+## Environment Variables
 
 See `.env.example` for all configuration options.
 
@@ -444,22 +499,25 @@ Critical variables:
 - `ANTHROPIC_API_KEY` - Claude API key
 - `DATABASE_URL` - PostgreSQL connection
 - `REDIS_URL` - Redis connection
+- `SOMNIA_STREAMS_ENABLED` - Enable Data Streams
+- `SOMNIA_PRIVATE_KEY` - Streams signing key
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch
 3. Add tests
-4. Run linting: `poetry run black . && poetry run isort .`
+4. Run linting: `pip install black isort && black . && isort .`
 5. Submit pull request
 
-## 📄 License
+## License
 
 MIT License
 
-## 🔗 Links
+## Links
 
 - Frontend: `../frontend`
 - Contracts: `../contracts`
 - Documentation: `../docs`
 - API Docs: http://localhost:8000/docs
+- Somnia Data Streams: https://docs.somnia.network/data-streams

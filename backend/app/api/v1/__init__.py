@@ -4,7 +4,7 @@ API v1 router
 
 from fastapi import APIRouter
 
-from app.api.v1 import agents, chat, transactions, analytics, websocket
+from app.api.v1 import agents, chat, transactions, analytics, websocket, streams
 
 router = APIRouter()
 
@@ -14,3 +14,4 @@ router.include_router(chat.router, prefix="/chat", tags=["chat"])
 router.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
 router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
 router.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+router.include_router(streams.router, tags=["Somnia Streams"])

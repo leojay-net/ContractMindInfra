@@ -16,8 +16,19 @@ import {
     Shield,
     Layers,
     Workflow,
+    Radio,
+    Activity,
 } from 'lucide-react';
 import Text3D from '@/components/ui/Text3D';
+
+// Featured/highlighted feature (Somnia Data Streams)
+const highlightedFeature = {
+    icon: Radio,
+    title: 'Somnia Data Streams',
+    description:
+        'Real-time on-chain data publishing and subscriptions. Stream agent activity, chat history, analytics, and leaderboards directly to the Somnia blockchain for verifiable, decentralized data.',
+    badges: ['Real-Time', 'On-Chain', 'Verifiable'],
+};
 
 const features = [
     {
@@ -33,22 +44,22 @@ const features = [
             'Granular function-level permissions. Agents can only execute explicitly authorized smart contract functions.',
     },
     {
-        icon: Zap,
-        title: 'Real-Time Execution',
+        icon: Activity,
+        title: 'Live Activity Feeds',
         description:
-            'Sub-second transaction preparation and execution. Monitor agent activity with live analytics and notifications.',
+            'Subscribe to real-time WebSocket streams of agent executions, transactions, and platform activity. Powered by Somnia Data Streams.',
     },
     {
         icon: MessageSquare,
         title: 'Conversational Interface',
         description:
-            'Chat with your agents using natural language. Request transactions, query blockchain state, or automate workflows.',
+            'Chat with your agents using natural language. All conversations stored on-chain for verifiable history.',
     },
     {
         icon: BarChart3,
-        title: 'Advanced Analytics',
+        title: 'On-Chain Analytics',
         description:
-            'Track agent performance, transaction history, and blockchain interactions. Comprehensive insights and reporting.',
+            'Track agent performance with tamper-proof analytics. Leaderboards and metrics published directly to Somnia streams.',
     },
     {
         icon: Code,
@@ -64,9 +75,9 @@ const features = [
     },
     {
         icon: Layers,
-        title: 'Multi-Chain Ready',
+        title: 'Somnia Native',
         description:
-            'Currently on Somnia Network with support for additional EVM chains. Seamless cross-chain agent deployment.',
+            'Built exclusively for Somnia Network. Leveraging high-throughput, low-latency blockchain for optimal agent performance.',
     },
     {
         icon: Workflow,
@@ -94,12 +105,13 @@ const item = {
 export default function Features() {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
+    const HighlightIcon = highlightedFeature.icon;
 
     return (
         <section ref={ref} id="features" className="relative py-24 px-6 bg-black/80 backdrop-blur-sm">
             <div className="container mx-auto max-w-7xl">
                 {/* Section Header */}
-                <div className="max-w-3xl mx-auto text-center mb-20">
+                <div className="max-w-3xl mx-auto text-center mb-12">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -117,6 +129,53 @@ export default function Features() {
                         </p>
                     </motion.div>
                 </div>
+
+                {/* Highlighted Feature - Somnia Data Streams */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="mb-16"
+                >
+                    <div className="relative p-8 md:p-12 bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 hover:bg-white/10 transition-all duration-500">
+                        {/* Subtle glow effect */}
+                        <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-500" />
+                        <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-500" />
+
+                        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+                            {/* Icon */}
+                            <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center group-hover:bg-white/20 group-hover:scale-110 transition-all duration-300">
+                                <HighlightIcon className="w-10 h-10 text-white" />
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1">
+                                <div className="flex flex-wrap items-center gap-3 mb-3">
+                                    <h3 className="text-2xl md:text-3xl font-bold text-white">
+                                        {highlightedFeature.title}
+                                    </h3>
+                                    <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-gray-300 text-sm font-medium">
+                                        Powered by Somnia
+                                    </span>
+                                </div>
+                                <p className="text-lg text-gray-400 mb-4 max-w-3xl">
+                                    {highlightedFeature.description}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {highlightedFeature.badges.map((badge, i) => (
+                                        <span
+                                            key={i}
+                                            className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 text-sm"
+                                        >
+                                            {badge}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
 
                 {/* Features Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

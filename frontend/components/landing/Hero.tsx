@@ -77,20 +77,32 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                        className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto leading-relaxed font-medium"
+                        className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed font-medium"
                         style={{
                             color: '#FFFFFF',
                             textShadow: '0 0 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.8), 0 4px 15px rgba(0,0,0,1)',
                             WebkitFontSmoothing: 'antialiased'
                         }}
                     >
-                        Deploy autonomous AI agents with blockchain-powered security and intelligence.
-                        Build, manage, and scale your agent infrastructure with enterprise-grade reliability.
+                        Deploy autonomous AI agents with blockchain-powered security.
+                        Real-time data streaming, on-chain analytics, and verifiable agent activity on Somnia.
                     </motion.p>
 
-                    {/* Key Features Pills */}
-                    {/* Feature Pills */}
-                    {/*  */}
+                    {/* Somnia Data Streams Badge */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        className="flex justify-center mb-12"
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/20 rounded-full backdrop-blur-sm">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/60 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            <span className="text-sm font-medium text-gray-300">Powered by Somnia Data Streams</span>
+                        </div>
+                    </motion.div>
 
                     {/* CTA Buttons */}
                     {/* CTA Buttons */}
@@ -104,8 +116,8 @@ export default function Hero() {
                             href="/dashboard"
                             onClick={handleGetStarted}
                             className={`group px-8 py-4 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 shadow-2xl cursor-pointer ${isConnected
-                                    ? 'bg-white text-black hover:bg-gray-200 hover:shadow-white/20'
-                                    : 'bg-white/10 text-white/50 border border-white/20 cursor-not-allowed'
+                                ? 'bg-white text-black hover:bg-gray-200 hover:shadow-white/20'
+                                : 'bg-white/10 text-white/50 border border-white/20 cursor-not-allowed'
                                 }`}
                         >
                             Get Started

@@ -1,11 +1,13 @@
 # ContractMind Infrastructure
 
-Enterprise-grade blockchain infrastructure for AI-powered smart contract interaction and management.
+Enterprise-grade blockchain infrastructure for AI-powered smart contract interaction and management, featuring real-time on-chain data streaming powered by Somnia Data Streams.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
+- [Data Flow](#data-flow)
+- [Somnia Data Streams Integration](#somnia-data-streams-integration)
 - [Core Features](#core-features)
 - [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
@@ -31,7 +33,8 @@ ContractMind transforms how users interact with blockchain smart contracts by:
 - **Natural Language Processing**: Users can interact with smart contracts using plain English instead of technical commands
 - **AI-Driven Analysis**: Multiple LLM providers (Gemini, Claude, OpenAI) analyze contract structures and recommend optimal interaction patterns
 - **Agent Orchestration**: Specialized AI agents handle different aspects of contract interaction (analysis, execution, validation)
-- **Real-time Monitoring**: Track all transactions, gas usage, and contract events in real-time
+- **Real-time Data Streams**: All agent activity, chat history, and analytics are published on-chain via Somnia Data Streams
+- **Verifiable History**: On-chain data provides tamper-proof audit trails for all interactions
 - **Security First**: Built-in rate limiting, authorization controls, and transaction validation
 
 ### Use Cases
@@ -41,6 +44,250 @@ ContractMind transforms how users interact with blockchain smart contracts by:
 3. **DAO Governance**: Participate in governance through conversational interfaces
 4. **Contract Analysis**: Analyze unknown contracts to understand their functionality before interaction
 5. **Multi-Contract Operations**: Execute complex operations across multiple contracts with single commands
+6. **Verifiable Agent Analytics**: Track agent performance with on-chain, tamper-proof metrics
+
+## Architecture
+
+ContractMind employs a four-tier architecture optimized for scalability, security, and real-time data streaming.
+
+```
++-----------------------------------------------------------------------+
+|                         FRONTEND LAYER                                 |
+|  Next.js 16 | React 19 | TypeScript | TailwindCSS                     |
+|  Wallet Integration | Real-time UI | 3D Visualizations                |
+|  Somnia Streams SDK | React Hooks for Real-time Data                  |
++-----------------------------------------------------------------------+
+                                |
+                         HTTPS / WebSocket
+                                |
++-----------------------------------------------------------------------+
+|                         BACKEND LAYER                                  |
+|  FastAPI | Python 3.12 | PostgreSQL | Redis                           |
+|  AI Orchestration | Blockchain Services | Analytics                    |
+|  Streams Publishing Service | Real-time Event Processing              |
++-----------------------------------------------------------------------+
+                                |
+                           Web3 RPC
+                                |
++-----------------------------------------------------------------------+
+|                      BLOCKCHAIN LAYER                                  |
+|  Somnia Testnet (Chain ID: 50312) | Solidity 0.8.20                   |
+|  Agent Registry | Hub Contract | Staking System                       |
++-----------------------------------------------------------------------+
+                                |
+                       Data Streams Protocol
+                                |
++-----------------------------------------------------------------------+
+|                    SOMNIA DATA STREAMS LAYER                           |
+|  Real-time Publishing | WebSocket Subscriptions                        |
+|  On-chain Analytics | Verifiable Chat History | Leaderboards          |
++-----------------------------------------------------------------------+
+```
+
+## Data Flow
+
+### Traditional Architecture (Without Data Streams)
+
+```
++----------+     HTTP      +----------+     SQL      +------------+
+|          | ------------> |          | -----------> |            |
+|  Client  |               |  Backend |              |  Database  |
+|          | <------------ |          | <----------- |            |
++----------+    Response   +----------+    Query     +------------+
+                                |
+                                | Web3 RPC
+                                v
+                          +----------+
+                          | Somnia   |
+                          | Chain    |
+                          +----------+
+
+Data Characteristics:
+- Centralized storage in PostgreSQL
+- Data can be modified or deleted
+- No verifiable history
+- Polling required for updates
+- Single point of failure for data
+```
+
+### With Somnia Data Streams
+
+```
++----------+     HTTP      +----------+     SQL      +------------+
+|          | ------------> |          | -----------> |            |
+|  Client  |               |  Backend |              |  Database  |
+|          | <------------ |          | <----------- |            |
++----------+    Response   +----------+    Query     +------------+
+     |                          |                          
+     |   WebSocket              | Publish                  
+     |   Subscribe              v                          
+     |                    +----------+                     
+     +----------------->  |  Somnia  |                     
+           Real-time      |  Data    |                     
+           Updates        |  Streams |                     
+                          +----------+                     
+                               |
+                               | On-chain Storage
+                               v
+                          +----------+
+                          | Somnia   |
+                          | Chain    |
+                          +----------+
+
+Data Characteristics:
+- Decentralized on-chain storage
+- Immutable and tamper-proof
+- Verifiable history with timestamps
+- Real-time WebSocket subscriptions
+- No single point of failure
+- Cross-application data portability
+```
+
+### Detailed Data Flow Diagram
+
+```
+User Action                    Backend Processing                 Data Streams
+-----------                    ------------------                 ------------
+
+1. User sends                  2. Backend receives
+   chat message   --------->      and processes
+                                      |
+                               3. AI generates
+                                  response
+                                      |
+                               4. Store in DB     
+                                  (fast access)
+                                      |
+                               5. Publish to      --------->  6. On-chain storage
+                                  Streams                        (verifiable)
+                                      |
+                               7. Return response                    |
+       <-----------------------------|                               |
+                                                                     |
+8. Frontend                                                          |
+   receives response                                                 |
+       |                                                             |
+9. Subscribe to               <--------------------------------------+
+   real-time updates              WebSocket notifications
+   (optional)
+```
+
+## Somnia Data Streams Integration
+
+ContractMind leverages Somnia Data Streams for real-time, on-chain data publishing and subscriptions. This provides verifiable, decentralized storage for all platform activity.
+
+### What Data is Streamed?
+
+| Data Type           | Description                    | Use Case                           |
+| ------------------- | ------------------------------ | ---------------------------------- |
+| Agent Execution     | Every agent function call      | Performance tracking, audit trails |
+| Chat Messages       | User and AI conversations      | Verifiable chat history            |
+| Analytics Snapshots | Periodic performance metrics   | Dashboards, reporting              |
+| Transaction Events  | Blockchain transaction details | Transaction history                |
+| Activity Feed       | Platform-wide activity         | Real-time notifications            |
+| Leaderboards        | Agent rankings and scores      | Competitive metrics                |
+
+### Schema Definitions
+
+Six on-chain schemas are used:
+
+```
+AGENT_EXECUTION:
+  - timestamp (uint64)
+  - agentId (bytes32)
+  - executor (address)
+  - functionSelector (bytes32)
+  - success (bool)
+  - gasUsed (uint256)
+  - errorMessage (string)
+
+CHAT_MESSAGE:
+  - timestamp (uint64)
+  - sessionId (bytes32)
+  - sender (address)
+  - agentId (bytes32)
+  - role (string)
+  - content (string)
+  - intentAction (string)
+
+ANALYTICS_SNAPSHOT:
+  - timestamp (uint64)
+  - agentId (bytes32)
+  - totalCalls (uint256)
+  - successCount (uint256)
+  - totalGasUsed (uint256)
+  - uniqueUsers (uint256)
+
+TRANSACTION_EVENT:
+  - timestamp (uint64)
+  - txHash (bytes32)
+  - user (address)
+  - agentId (bytes32)
+  - action (string)
+  - status (string)
+  - gasUsed (uint256)
+
+ACTIVITY_FEED:
+  - timestamp (uint64)
+  - entityId (bytes32)
+  - entityType (string)
+  - action (string)
+  - actor (address)
+  - metadata (string)
+
+LEADERBOARD:
+  - timestamp (uint64)
+  - agentId (bytes32)
+  - agentName (string)
+  - score (uint256)
+  - totalExecutions (uint256)
+  - successRate (uint256)
+```
+
+### Benefits of Data Streams
+
+1. **Verifiability**: All data is stored on-chain with cryptographic proofs
+2. **Real-time Updates**: WebSocket subscriptions for instant notifications
+3. **Decentralization**: No single point of failure for critical data
+4. **Portability**: Other applications can read and use the data
+5. **Audit Trail**: Complete, immutable history of all activity
+6. **Transparency**: Public data that can be independently verified
+
+### API Endpoints
+
+| Method | Endpoint                            | Description                        |
+| ------ | ----------------------------------- | ---------------------------------- |
+| GET    | /api/v1/streams/status              | Service status and connection info |
+| GET    | /api/v1/streams/schemas             | Available schema definitions       |
+| POST   | /api/v1/streams/publish/execution   | Publish agent execution event      |
+| POST   | /api/v1/streams/publish/chat        | Publish chat message               |
+| POST   | /api/v1/streams/publish/analytics   | Publish analytics snapshot         |
+| POST   | /api/v1/streams/publish/transaction | Publish transaction event          |
+| POST   | /api/v1/streams/publish/activity    | Publish activity feed item         |
+| POST   | /api/v1/streams/publish/leaderboard | Update leaderboard entry           |
+| POST   | /api/v1/streams/publish/batch       | Batch publish multiple items       |
+
+### Frontend Integration
+
+React hooks are provided for easy integration:
+
+```typescript
+import { 
+  useChatMessages, 
+  useTransactionEvents, 
+  useAgentActivity,
+  useAnalyticsData 
+} from '@/lib/streams';
+
+function Dashboard({ agentId }) {
+  const { data: messages } = useChatMessages(sessionId);
+  const { data: events } = useTransactionEvents(agentId);
+  const { data: activity } = useAgentActivity(agentId);
+  const { data: analytics } = useAnalyticsData(agentId);
+  
+  // Render with real-time data
+}
+```
 
 ## Core Features
 
@@ -50,6 +297,15 @@ ContractMind transforms how users interact with blockchain smart contracts by:
 - **Intent Recognition**: Advanced NLP to understand user intentions and map them to contract functions
 - **Smart Parameter Inference**: AI-driven parameter suggestions based on contract requirements
 - **Error Prevention**: Predictive analysis to prevent failed transactions and optimize gas usage
+
+### Somnia Data Streams
+
+- **Real-time Publishing**: All agent activity published on-chain for verifiable history
+- **WebSocket Subscriptions**: Real-time updates without polling
+- **On-chain Analytics**: Tamper-proof performance metrics and leaderboards
+- **Verifiable Chat History**: All conversations stored on-chain with timestamps
+- **Activity Feeds**: Platform-wide real-time activity notifications
+- **Cross-application Data**: Data accessible to any application on Somnia
 
 ### Blockchain Integration
 
@@ -70,13 +326,14 @@ ContractMind transforms how users interact with blockchain smart contracts by:
 - **WebSocket API**: Real-time updates for transaction status and contract events
 - **Chat Interface**: Conversational UI for natural language contract interaction
 - **Live Analytics**: Real-time dashboard showing system metrics and performance
+- **Stream Subscriptions**: Subscribe to on-chain data changes instantly
 
-### Security & Compliance
+### Security and Compliance
 
 - **Wallet Authentication**: Secure wallet-based user authentication
 - **Rate Limiting**: Configurable rate limits per user and agent
 - **Function Authorization**: Granular control over which functions agents can execute
-- **Audit Trail**: Complete transaction history and execution logs
+- **Audit Trail**: Complete transaction history and execution logs on-chain
 
 ## Architecture
 
@@ -181,8 +438,15 @@ Python-based API server handling business logic and AI orchestration.
    - `execution_service.py`: Transaction execution coordination
    - `analytics_service.py`: Metrics aggregation and reporting
    - `blockchain_service.py`: Contract interaction abstraction
+   - `streams_service.py`: Somnia Data Streams publishing
 
-5. **Database Layer** (`app/db/`):
+5. **Streams API** (`app/api/v1/streams.py`):
+   - REST endpoints for data publishing
+   - Schema management and validation
+   - Batch publishing support
+   - Service status monitoring
+
+6. **Database Layer** (`app/db/`):
    - Connection pooling for performance
    - Migration management with Alembic
    - Models for agents, transactions, chat history
@@ -238,10 +502,19 @@ Modern web application providing intuitive user interface.
    - Wallet state management
    - Network configuration
 
+6. **Somnia Data Streams** (`lib/streams/`):
+   - `config.ts`: Chain and schema configuration
+   - `client.ts`: SDK initialization and utilities
+   - `read.ts`: Query data from streams
+   - `write.ts`: Publish data to streams
+   - `subscribe.ts`: WebSocket subscriptions
+   - `hooks.ts`: React hooks for components
+
 **Key Features**:
 - Server-side rendering (SSR) for performance
 - Optimistic UI updates
 - Real-time WebSocket integration
+- Somnia Data Streams SDK integration
 - Progressive Web App (PWA) capabilities
 - Mobile-responsive design
 - Dark mode support
@@ -250,57 +523,67 @@ Modern web application providing intuitive user interface.
 
 ### Backend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Python | 3.12+ | Core programming language |
-| FastAPI | 0.115.14 | Async web framework |
-| PostgreSQL | 14+ | Primary database |
-| SQLAlchemy | 2.0+ | ORM and database toolkit |
-| web3.py | 6.15.1 | Ethereum interaction |
-| Pydantic | 2.0+ | Data validation |
-| Loguru | 0.7+ | Structured logging |
-| pytest | 7.4+ | Testing framework |
+| Technology | Version  | Purpose                   |
+| ---------- | -------- | ------------------------- |
+| Python     | 3.12+    | Core programming language |
+| FastAPI    | 0.115.14 | Async web framework       |
+| PostgreSQL | 14+      | Primary database          |
+| SQLAlchemy | 2.0+     | ORM and database toolkit  |
+| web3.py    | 6.15.1   | Ethereum interaction      |
+| Pydantic   | 2.0+     | Data validation           |
+| Loguru     | 0.7+     | Structured logging        |
+| pytest     | 7.4+     | Testing framework         |
 
 ### AI/LLM Integration
 
-| Provider | Model | Use Case |
-|----------|-------|----------|
-| Google Gemini | gemini-1.5-pro | Primary LLM (default) |
-| Anthropic | claude-3-5-sonnet | Advanced reasoning |
-| OpenAI | gpt-4-turbo | Alternative provider |
+| Provider      | Model             | Use Case              |
+| ------------- | ----------------- | --------------------- |
+| Google Gemini | gemini-1.5-pro    | Primary LLM (default) |
+| Anthropic     | claude-3-5-sonnet | Advanced reasoning    |
+| OpenAI        | gpt-4-turbo       | Alternative provider  |
 
 ### Frontend Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 16.0.1 | React framework |
-| React | 19.2.0 | UI library |
-| TypeScript | 5.0+ | Type safety |
-| TailwindCSS | 4.0 | Styling framework |
-| Wagmi | 2.19.2 | React hooks for Ethereum |
-| Viem | 2.38.6 | TypeScript Ethereum library |
-| Reown AppKit | 1.8.12 | Wallet connection |
-| Three.js | 0.181.0 | 3D visualizations |
-| Zustand | 5.0.8 | State management |
-| React Query | 5.90.5 | Data fetching |
+| Technology         | Version | Purpose                     |
+| ------------------ | ------- | --------------------------- |
+| Next.js            | 16.0.1  | React framework             |
+| React              | 19.2.0  | UI library                  |
+| TypeScript         | 5.0+    | Type safety                 |
+| TailwindCSS        | 4.0     | Styling framework           |
+| Wagmi              | 2.19.2  | React hooks for Ethereum    |
+| Viem               | 2.38.6  | TypeScript Ethereum library |
+| Reown AppKit       | 1.8.12  | Wallet connection           |
+| Somnia Streams SDK | 0.11.0  | Data streams integration    |
+| Three.js           | 0.181.0 | 3D visualizations           |
+| Zustand            | 5.0.8   | State management            |
+| React Query        | 5.90.5  | Data fetching               |
 
 ### Smart Contract Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Solidity | 0.8.20 | Contract language |
-| Foundry | Latest | Development framework |
-| OpenZeppelin | 5.0+ | Security libraries |
-| Forge | Latest | Testing and deployment |
+| Technology   | Version | Purpose                |
+| ------------ | ------- | ---------------------- |
+| Solidity     | 0.8.20  | Contract language      |
+| Foundry      | Latest  | Development framework  |
+| OpenZeppelin | 5.0+    | Security libraries     |
+| Forge        | Latest  | Testing and deployment |
+
+### Data Streams
+
+| Technology              | Purpose                  |
+| ----------------------- | ------------------------ |
+| Somnia Data Streams     | On-chain data publishing |
+| WebSocket Subscriptions | Real-time updates        |
+| Schema Encoding         | Structured data storage  |
 
 ### Infrastructure
 
-| Service | Purpose |
-|---------|---------|
-| Render.com | Backend hosting |
-| Vercel | Frontend hosting |
-| PostgreSQL | Database hosting |
-| Somnia Testnet | Blockchain network |
+| Service             | Purpose              |
+| ------------------- | -------------------- |
+| Render.com          | Backend hosting      |
+| Vercel              | Frontend hosting     |
+| PostgreSQL          | Database hosting     |
+| Somnia Testnet      | Blockchain network   |
+| Somnia Data Streams | Real-time data layer |
 
 ## Prerequisites
 

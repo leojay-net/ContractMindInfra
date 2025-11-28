@@ -1,19 +1,60 @@
 # ContractMind Frontend Infrastructure
 
-Enterprise-grade frontend application for the ContractMind AI-powered smart contract interaction platform. Built with Next.js 14, TypeScript, and modern Web3 technologies.
+Enterprise-grade frontend application for the ContractMind AI-powered smart contract interaction platform. Built with Next.js 14, TypeScript, and modern Web3 technologies. Integrated with Somnia Data Streams for verifiable on-chain data publishing.
 
 ## Architecture Overview
 
+```
+                                    ContractMind Frontend
+                                           |
+           +-------------------------------+-------------------------------+
+           |                               |                               |
+     [Landing Page]               [Dashboard App]                  [Data Streams]
+           |                               |                               |
+      Hero, Features              Chat, Agents, Analytics        StreamsClient SDK
+           |                               |                               |
+           +-------------------------------+-------------------------------+
+                                           |
+                              +------------+------------+
+                              |                         |
+                        [Backend API]            [Somnia Network]
+                        WebSocket + REST          Chain ID: 50312
+```
+
+### Data Flow with Somnia Data Streams
+
+**Before Data Streams (Traditional)**:
+```
+User Action → Backend API → Database → Response
+                  ↓
+            (No verification)
+```
+
+**After Data Streams (Current)**:
+```
+User Action → Backend API → Somnia Data Streams → On-Chain Verification
+                  |                  |
+                  ↓                  ↓
+             Database          Verifiable Record
+                  |                  |
+                  +--------+---------+
+                           ↓
+                    Frontend Display
+                    (with proof link)
+```
+
 ### Technology Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript 5
-- **Styling**: Tailwind CSS
-- **Web3**: Wagmi + Viem
-- **Wallet Connection**: Reown AppKit (WalletConnect v3)
-- **State Management**: React Query (TanStack Query)
-- **HTTP Client**: Axios
-- **UI Components**: Custom component library with Radix UI primitives
+| Layer        | Technology            | Version          |
+| ------------ | --------------------- | ---------------- |
+| Framework    | Next.js               | 16.0.1           |
+| Language     | TypeScript            | 5                |
+| Styling      | Tailwind CSS          | 4                |
+| Web3         | Wagmi + Viem          | 2.x              |
+| Wallet       | Reown AppKit          | WalletConnect v3 |
+| State        | React Query           | TanStack Query   |
+| HTTP         | Axios                 | Latest           |
+| Data Streams | @somnia-chain/streams | 0.11.0           |
 
 ### Project Structure
 
@@ -34,13 +75,77 @@ frontend/
 │   └── ui/                    # Base UI primitives
 ├── lib/                       # Utility libraries
 │   ├── api.ts                 # API client configuration
-│   └── config.ts              # Application configuration
+│   ├── config.ts              # Application configuration
+│   └── streams/               # Somnia Data Streams SDK
+│       ├── index.ts           # Module exports
+│       ├── client.ts          # StreamsClient wrapper
+│       ├── config.ts          # Chain configuration
+│       ├── schemas.ts         # Schema definitions
+│       ├── types.ts           # TypeScript types
+│       ├── hooks.ts           # React hooks
+│       └── utils.ts           # Utilities
 ├── providers/                 # React context providers
 │   └── Web3Provider.tsx       # Web3 wallet provider
 ├── types/                     # TypeScript type definitions
 │   └── index.ts               # Shared interfaces and types
 └── utils/                     # Utility functions
+```
 
+## Somnia Data Streams Integration
+
+ContractMind uses Somnia Data Streams to publish verifiable on-chain records of:
+
+- Agent executions and function calls
+- Chat message history
+- Analytics snapshots
+- Transaction events
+- Activity feed updates
+- Leaderboard rankings
+
+### Schemas
+
+| Schema             | Purpose                          |
+| ------------------ | -------------------------------- |
+| AGENT_EXECUTION    | Agent function execution records |
+| CHAT_MESSAGE       | Chat interaction history         |
+| ANALYTICS_SNAPSHOT | Periodic analytics captures      |
+| TRANSACTION_EVENT  | Blockchain transaction records   |
+| ACTIVITY_FEED      | User activity stream             |
+| LEADERBOARD        | Ranking updates                  |
+
+### Using the Streams Client
+
+```typescript
+import { useStreams } from '@/lib/streams/hooks';
+
+function MyComponent() {
+  const { publish, isPublishing, status } = useStreams();
+
+  const handleAction = async () => {
+    const result = await publish('AGENT_EXECUTION', {
+      agent_id: 'agent-123',
+      executor: address,
+      function_selector: '0x12345678',
+      success: true,
+      gas_used: 50000n,
+    });
+
+    if (result.success) {
+      console.log('Published:', result.txHash);
+    }
+  };
+}
+```
+
+### Configuration
+
+Add to `.env.local`:
+
+```env
+# Somnia Data Streams
+NEXT_PUBLIC_SOMNIA_STREAMS_ENABLED=true
+NEXT_PUBLIC_SOMNIA_CHAIN_ID=50312
+NEXT_PUBLIC_SOMNIA_RPC_URL=https://dream-rpc.somnia.network
 ```
 
 ## Prerequisites
@@ -127,12 +232,12 @@ NEXT_PUBLIC_USE_REAL_CHAT=0
 
 When `NEXT_PUBLIC_USE_MOCK=1`, the frontend will:
 
-✅ **Agent Management**: Create, read, update, and delete agents (stored in localStorage)  
-✅ **ABI Parsing**: Paste contract address + ABI to create agent instances  
-✅ **Chat Interface**: Interactive chat with rule-based mock responses  
-✅ **Transaction Simulation**: Mock transaction preparation and execution  
-✅ **Analytics**: Mock analytics data and metrics  
-✅ **Persistence**: All mock data persists in localStorage across page reloads  
+- **Agent Management**: Create, read, update, and delete agents (stored in localStorage)
+- **ABI Parsing**: Paste contract address + ABI to create agent instances
+- **Chat Interface**: Interactive chat with rule-based mock responses
+- **Transaction Simulation**: Mock transaction preparation and execution
+- **Analytics**: Mock analytics data and metrics
+- **Persistence**: All mock data persists in localStorage across page reloads  
 
 ### Hybrid Mode: Real AI Chat with Mock Data
 
@@ -571,5 +676,12 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ## License
 
-Proprietary - All rights reserved
+MIT License
+
+## Links
+
+- Backend: `../backend`
+- Contracts: `../contracts`
+- Documentation: `../docs`
+- Somnia Data Streams Docs: `../docs/SOMNIA_STREAMS.md`
 

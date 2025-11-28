@@ -204,6 +204,94 @@ class ApiClient {
         const ws = new WebSocket(`${wsUrl}/api/v1/ws/chat/${agentId}?user_address=${userAddress}`);
         return ws;
     }
+
+    // =========================================
+    // Somnia Data Streams
+    // =========================================
+
+    async getStreamsStatus(): Promise<{
+        enabled: boolean;
+        connected: boolean;
+        chain_id: number | null;
+        schemas: string[];
+    }> {
+        return this.request('/api/v1/streams/status');
+    }
+
+    async getStreamsSchemas(): Promise<{
+        schemas: Record<string, string>;
+        schema_ids: Record<string, string>;
+    }> {
+        return this.request('/api/v1/streams/schemas');
+    }
+
+    async publishAgentExecution(data: {
+        agent_id: string;
+        executor: string;
+        function_selector: string;
+        success: boolean;
+        gas_used: number;
+        error_message?: string;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.request('/api/v1/streams/publish/execution', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async publishChatToStreams(data: {
+        session_id: string;
+        sender: string;
+        agent_id: string;
+        role: string;
+        content: string;
+        intent_action?: string;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.request('/api/v1/streams/publish/chat', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async publishAnalyticsToStreams(data: {
+        agent_id: string;
+        total_calls: number;
+        success_count: number;
+        total_gas_used: number;
+        unique_users: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.request('/api/v1/streams/publish/analytics', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async publishTransactionToStreams(data: {
+        tx_hash: string;
+        user: string;
+        agent_id: string;
+        action: string;
+        status: string;
+        gas_used: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.request('/api/v1/streams/publish/transaction', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async updateLeaderboard(data: {
+        agent_id: string;
+        agent_name: string;
+        score: number;
+        total_executions: number;
+        success_rate: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.request('/api/v1/streams/publish/leaderboard', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
 }
 
 // -----------------------
@@ -700,6 +788,121 @@ class MockApiClient {
     connectWebSocket(_agentId: string, _userAddress: string): any {
         // Return a very small mock socket-like object used in the UI for events
         return new MockWebSocket();
+    }
+
+    // =========================================
+    // Somnia Data Streams (Mock implementations)
+    // =========================================
+
+    async getStreamsStatus(): Promise<{
+        enabled: boolean;
+        connected: boolean;
+        chain_id: number | null;
+        schemas: string[];
+    }> {
+        return this.simulateDelay({
+            enabled: true,
+            connected: true,
+            chain_id: 50312,
+            schemas: ['agent_execution', 'chat_message', 'analytics_snapshot', 'transaction_event', 'activity_feed', 'leaderboard'],
+        });
+    }
+
+    async getStreamsSchemas(): Promise<{
+        schemas: Record<string, string>;
+        schema_ids: Record<string, string>;
+    }> {
+        return this.simulateDelay({
+            schemas: {
+                agent_execution: '(uint64 timestamp, bytes32 agentId, address executor, bytes4 functionSelector, bool success, uint256 gasUsed, string errorMessage)',
+                chat_message: '(uint64 timestamp, bytes32 sessionId, address sender, bytes32 agentId, string role, string content, string intentAction)',
+                analytics_snapshot: '(uint64 timestamp, bytes32 agentId, uint256 totalCalls, uint256 successCount, uint256 totalGasUsed, uint256 uniqueUsers)',
+                transaction_event: '(uint64 timestamp, bytes32 txHash, address user, bytes32 agentId, string action, string status, uint256 gasUsed)',
+                activity_feed: '(uint64 timestamp, bytes32 entityId, string entityType, string action, address actor, string metadata)',
+                leaderboard: '(uint64 timestamp, bytes32 agentId, string agentName, uint256 score, uint256 totalExecutions, uint256 successRate)',
+            },
+            schema_ids: {
+                agent_execution: '0xmock1',
+                chat_message: '0xmock2',
+                analytics_snapshot: '0xmock3',
+                transaction_event: '0xmock4',
+                activity_feed: '0xmock5',
+                leaderboard: '0xmock6',
+            },
+        });
+    }
+
+    async publishAgentExecution(_data: {
+        agent_id: string;
+        executor: string;
+        function_selector: string;
+        success: boolean;
+        gas_used: number;
+        error_message?: string;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.simulateDelay({
+            success: true,
+            tx_hash: `0x${Math.random().toString(16).slice(2)}`,
+            data_id: `mock-${Date.now()}`,
+        }, 200);
+    }
+
+    async publishChatToStreams(_data: {
+        session_id: string;
+        sender: string;
+        agent_id: string;
+        role: string;
+        content: string;
+        intent_action?: string;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.simulateDelay({
+            success: true,
+            tx_hash: `0x${Math.random().toString(16).slice(2)}`,
+            data_id: `mock-${Date.now()}`,
+        }, 200);
+    }
+
+    async publishAnalyticsToStreams(_data: {
+        agent_id: string;
+        total_calls: number;
+        success_count: number;
+        total_gas_used: number;
+        unique_users: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.simulateDelay({
+            success: true,
+            tx_hash: `0x${Math.random().toString(16).slice(2)}`,
+            data_id: `mock-${Date.now()}`,
+        }, 200);
+    }
+
+    async publishTransactionToStreams(_data: {
+        tx_hash: string;
+        user: string;
+        agent_id: string;
+        action: string;
+        status: string;
+        gas_used: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.simulateDelay({
+            success: true,
+            tx_hash: `0x${Math.random().toString(16).slice(2)}`,
+            data_id: `mock-${Date.now()}`,
+        }, 200);
+    }
+
+    async updateLeaderboard(_data: {
+        agent_id: string;
+        agent_name: string;
+        score: number;
+        total_executions: number;
+        success_rate: number;
+    }): Promise<{ success: boolean; tx_hash?: string; data_id?: string; error?: string }> {
+        return this.simulateDelay({
+            success: true,
+            tx_hash: `0x${Math.random().toString(16).slice(2)}`,
+            data_id: `mock-${Date.now()}`,
+        }, 200);
     }
 }
 

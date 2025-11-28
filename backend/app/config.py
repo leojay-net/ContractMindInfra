@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Somnia Testnet chain ID (updated)
     CHAIN_ID: int = 50312
 
+    # Somnia Data Streams
+    SOMNIA_STREAMS_ENABLED: bool = True
+    SOMNIA_PRIVATE_KEY: str | None = None
+
     # Deployed Contracts
     AGENT_REGISTRY_ADDRESS: str
     CONTRACT_MIND_HUB_ADDRESS: str

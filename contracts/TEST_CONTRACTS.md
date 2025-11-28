@@ -6,16 +6,16 @@ All contracts are deployed on **Somnia Testnet** (Chain ID: 50312)
 
 ### Core Contracts
 
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| **AgentRegistry** | `0x318FFd8Fc398a3639Faa837307Ffdd0b9E1017c9` | Agent registration and management |
+| Contract              | Address                                      | Purpose                                  |
+| --------------------- | -------------------------------------------- | ---------------------------------------- |
+| **AgentRegistry**     | `0x318FFd8Fc398a3639Faa837307Ffdd0b9E1017c9` | Agent registration and management        |
 | **ContractMindHubV2** | `0x8244777FAe8F2f4AE50875405AFb34E10164C027` | Function authorization and execution hub |
 
 ### Test Contracts
 
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| **TestToken** | `0x4f692992b0e5FFF6C08A71fc39603954D986F6e7` | ERC20 token with faucet for testing |
+| Contract            | Address                                      | Purpose                                           |
+| ------------------- | -------------------------------------------- | ------------------------------------------------- |
+| **TestToken**       | `0x4f692992b0e5FFF6C08A71fc39603954D986F6e7` | ERC20 token with faucet for testing               |
 | **HubAwareStaking** | `0x306f0f0DED2Eda539b6f768067CC36790Eb2180c` | Staking contract that works with ContractMind Hub |
 
 ### Deployer Address
@@ -333,6 +333,6 @@ cd frontend && npm run dev
 
 ---
 
-**Happy Testing! 🚀**
+**Happy Testing!**
 
 All contracts are deployed and ready to use on Somnia Testnet!

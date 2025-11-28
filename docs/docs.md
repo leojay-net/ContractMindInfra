@@ -90,13 +90,14 @@ Agent: "I'll withdraw 250 SOMI from your stake. This will:
 
 ---
 
-## 🔧 **Technical Stack Recommendation**
+## Technical Stack Recommendation
 
 ### **Frontend:**
 - **React** + **TypeScript**
 - **wagmi/viem** for Web3 interactions
 - **TailwindCSS** for styling
 - **Recharts** for data visualization
+- **Somnia Data Streams SDK** for verifiable data
 
 ### Backend Services (`/backend`)
 
@@ -144,9 +145,9 @@ Python-based API server handling business logic and AI operations.
 
 ---
 
-## 📋 **MVP Feature Prioritization (For Hackathon)**
+## MVP Feature Prioritization (For Hackathon)
 
-### **✅ Must-Have (Core MVP):**
+### Must-Have (Core MVP):
 1. Contract ABI upload & parsing
 2. Function mapping dashboard
 3. Basic chat interface for users
@@ -155,14 +156,15 @@ Python-based API server handling business logic and AI operations.
 6. Simple agent customization (name, description)
 7. Deploy 1-2 example agents (e.g., DeFi lending pool)
 
-### **🎯 Should-Have (If Time Permits):**
+### Should-Have (If Time Permits):
 1. API endpoint generation
 2. Event monitoring & notifications
 3. Multi-contract support
 4. Transaction history view
 5. Basic analytics dashboard
+6. Somnia Data Streams integration
 
-### **💡 Nice-to-Have (Stretch Goals):**
+### Nice-to-Have (Stretch Goals):
 1. Telegram/Discord integration
 2. Agent marketplace
 3. Template library (DeFi, NFT, DAO templates)
@@ -171,7 +173,7 @@ Python-based API server handling business logic and AI operations.
 
 ---
 
-## 🚀 **Implementation Roadmap **
+## Implementation Roadmap
 
 ### : Foundation**
 - Set up repo, basic project structure
@@ -200,7 +202,7 @@ Python-based API server handling business logic and AI operations.
 
 ---
 
-## 🎯 **Example Use Cases to Showcase**
+## Example Use Cases to Showcase
 
 ### **1. DeFi Lending Pool Agent**
 ```

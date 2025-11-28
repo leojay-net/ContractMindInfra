@@ -14,6 +14,7 @@
     "@react-three/postprocessing": "^3.0.4",
     "@reown/appkit": "^1.8.12",
     "@reown/appkit-adapter-wagmi": "^1.8.12",
+    "@somnia-chain/streams": "^0.11.0",
     "@tanstack/react-query": "^5.90.5",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

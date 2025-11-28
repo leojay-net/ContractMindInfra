@@ -41,10 +41,10 @@ function _getUser() internal view returns (address) {
 
 **Why `tx.origin` is safe here:**
 
-1. ✅ **Trusted Hub Only** - Only the trusted hub contract can trigger `tx.origin` logic
-2. ✅ **User-Initiated** - User explicitly calls the hub to interact with the contract
-3. ✅ **Opt-In** - Contracts can disable hub mode at any time
-4. ✅ **Transparent** - Users know they're interacting through the hub
+1. **Trusted Hub Only** - Only the trusted hub contract can trigger `tx.origin` logic
+2. **User-Initiated** - User explicitly calls the hub to interact with the contract
+3. **Opt-In** - Contracts can disable hub mode at any time
+4. **Transparent** - Users know they're interacting through the hub
 
 ---
 
